@@ -8,8 +8,7 @@ import ResetPassword from './pages/ResetPassword';
 import ConfirmEmail from './pages/ConfirmEmail';
 import AdminLogin from './pages/AdminLogin';
 import AdminDashboard from './pages/AdminDashboard';
- 
-
+import Room from './pages/Room'; // <--- ADICIONE ESTA LINHA (ajuste o caminho se for diferente)
 
 
 const isAuthenticated = () => {
@@ -28,6 +27,10 @@ export default function App() {
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/admin/login" element={<AdminLogin />} />
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
+        <Route
+        path="/room/:roomId"
+        element={isAuthenticated() ? <Room /> : <Navigate to="/" />}
+        />
         
       
       <Route

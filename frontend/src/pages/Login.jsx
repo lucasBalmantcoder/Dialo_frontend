@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
+import { JSEncrypt } from 'jsencrypt/bin/jsencrypt'; // Importa JSEncrypt
 
 export default function Login() {
   const [login, setLogin] = useState('');
@@ -20,7 +21,39 @@ export default function Login() {
         password,
       });
 
-      localStorage.setItem('token', response.data.access_token);
+      const token = response.data.access_token;
+      localStorage.setItem('token', token);
+
+      // --- Lógica de Geração e Armazenamento de Chaves ---
+      const existingPrivateKey = localStorage.getItem('private_key');
+
+      if (!existingPrivateKey) {
+        console.log("Chave privada não encontrada. Gerando novo par de chaves...");
+        const encrypt = new JSEncrypt({ default_key_size: 2048 });
+        const privateKey = encrypt.getPrivateKey();
+        const publicKey = encrypt.getPublicKey();
+
+        if (privateKey && publicKey) {
+          localStorage.setItem('private_key', privateKey); // Salva a chave privada localmente
+
+          // Envia a chave pública para o backend
+          await axios.patch('http://127.0.0.1:5000/auth/public_key', {
+            public_key: publicKey
+          }, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          console.log("Chave pública enviada para o backend com sucesso.");
+        } else {
+          console.error("Falha ao gerar par de chaves RSA.");
+          setError("Erro ao gerar chaves de segurança. Tente novamente.");
+          localStorage.removeItem('token'); // Se não gerou chaves, remove o token
+          return;
+        }
+      } else {
+        console.log("Chave privada já existe. Usando chave existente.");
+      }
+      // --- Fim da Lógica de Geração de Chaves ---
+
       navigate('/dashboard');
     } catch (err) {
       if (err.response?.data?.error) {

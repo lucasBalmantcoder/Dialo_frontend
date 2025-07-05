@@ -5,5 +5,8 @@ export default defineConfig({
   plugins: [react()],
   server: {
     historyApiFallback: true
-  }
+  },
+  optimizeDeps: { // <-- ADICIONE ESTE BLOCO
+    include: ['jsencrypt/bin/jsencrypt', 'crypto-js'],
+  },
 })
